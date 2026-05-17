@@ -28,22 +28,30 @@ classifier_svc: TeamClassifierService | None = None
 load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / ".env")
 
 
+import threading
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global search_svc, recommender_svc, classifier_svc
 
-    print("Carregando modelos…")
+    def load_models():
+        global search_svc, recommender_svc, classifier_svc
+        try:
+            print("Carregando Pokedex Semantic Search…")
+            search_svc = SemanticSearchService()
 
-    print("Pokedex Semantic Search…")
-    search_svc = SemanticSearchService()
+            print("Carregando Team Recommender…")
+            recommender_svc = TeamRecommenderService()
 
-    print("Team Recommender…")
-    recommender_svc = TeamRecommenderService()
+            print("Carregando Team Classifier…")
+            classifier_svc = TeamClassifierService()
 
-    print("Team Classifier…")
-    classifier_svc = TeamClassifierService()
+            print("Todos os modelos carregados!")
+        except Exception as e:
+            print(f"Erro ao carregar modelos: {e}")
 
-    print("Todos os modelos carregados!")
+    print("Iniciando carregamento dos modelos em background...")
+    threading.Thread(target=load_models, daemon=True).start()
     yield
 
     # cleanup (nothing to do)
