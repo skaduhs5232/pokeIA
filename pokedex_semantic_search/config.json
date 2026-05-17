@@ -1,0 +1,7 @@
+{
+  "embed_model": "intfloat/multilingual-e5-base",
+  "reranker_model": "BAAI/bge-reranker-v2-m3",
+  "dimension": 768,
+  "total_pokemon": 1025,
+  "embedding_strategy": "passage:/query: prefix (E5 style)"
+}

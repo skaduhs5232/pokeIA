@@ -1,0 +1,132 @@
+# ─────────────────────────────────────────────
+# Python
+# ─────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+.eggs/
+build/
+dist/
+develop-eggs/
+downloads/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.manifest
+*.spec
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ─────────────────────────────────────────────
+# Ambientes virtuais
+# ─────────────────────────────────────────────
+venv/
+env/
+.venv/
+.env.local
+ENV/
+
+# ─────────────────────────────────────────────
+# Segredos / config local
+# ─────────────────────────────────────────────
+.env
+*.pem
+*.key
+secrets/
+
+# ─────────────────────────────────────────────
+# Testes / cobertura
+# ─────────────────────────────────────────────
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# ─────────────────────────────────────────────
+# Type checkers / linters
+# ─────────────────────────────────────────────
+.mypy_cache/
+.pyre/
+.pytype/
+.ruff_cache/
+.dmypy.json
+dmypy.json
+
+# ─────────────────────────────────────────────
+# Jupyter / IPython
+# ─────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+profile_default/
+ipython_config.py
+
+# ─────────────────────────────────────────────
+# IDEs / editores
+# ─────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ─────────────────────────────────────────────
+# Modelos / artefatos pesados (recriáveis)
+# ─────────────────────────────────────────────
+# Cache da PokeAPI (regenerável)
+pokedex_cache/
+
+# Logs do servidor
+api_stdout.log
+api_stderr.log
+*.log
+
+# Resultados de benchmark (geráveis)
+analysis_results*.txt
+full_results.txt
+
+# Cache do HuggingFace local ao projeto (se houver)
+.cache/
+hf_cache/
+
+# Modelos sentence-transformers cache
+.sentence_transformers_cache/
+
+# ─────────────────────────────────────────────
+# Notebooks - outputs grandes (opcional)
+# ─────────────────────────────────────────────
+# Descomente se quiser commitar notebooks sem outputs:
+# notebooks/*.ipynb
+
+# ─────────────────────────────────────────────
+# Sistema operacional
+# ─────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ─────────────────────────────────────────────
+# Outros artefatos do projeto
+# ─────────────────────────────────────────────
+*.zip
+*.tar
+*.tar.gz
+pokedex_semantic_search.zip
