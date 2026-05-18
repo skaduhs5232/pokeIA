@@ -224,6 +224,11 @@ class SemanticSearchService:
     """Busca híbrida: FAISS denso + BM25 esparso + RRF + cross-encoder re-ranking."""
 
     def __init__(self) -> None:
+        self._loaded = False
+        
+    def _load(self):
+        if self._loaded:
+            return
         data_dir = BASE_DIR / "pokedex_semantic_search"
 
         # ── Documentos & metadados ──
@@ -235,7 +240,7 @@ class SemanticSearchService:
         )
 
         # ── Embeddings densos ──
-        self.embeddings: np.ndarray = np.load(data_dir / "embeddings.npy")
+        self.embeddings: np.ndarray = np.load(data_dir / "embeddings.npy", mmap_mode="r")
 
         # ── Modelo de embedding (E5 multilingual) ──
         self.encoder = SentenceTransformer("intfloat/multilingual-e5-base")
@@ -278,6 +283,7 @@ class SemanticSearchService:
                 print(f"[WARN] Re-ranker indisponivel ({e}). Seguindo sem ele.")
         else:
             print("[INFO] Re-ranker desativado (POKEIA_USE_RERANKER!=1).")
+        self._loaded = True
 
     # ─────────────────────────────────────────────────────────────────────
     # Funções auxiliares de retrieval
@@ -313,6 +319,7 @@ class SemanticSearchService:
     # Endpoint principal
     # ─────────────────────────────────────────────────────────────────────
     def search(self, query: str, top_k: int = 5) -> list[dict]:
+        self._load()
         """
         Pipeline:
           1) Expande query PT-BR → adiciona tradução EN (para BM25 pegar tipos/conceitos).
@@ -403,10 +410,15 @@ class TeamRecommenderService:
     """Node2Vec embeddings + cosine similarity for teammate recommendations."""
 
     def __init__(self) -> None:
+        self._loaded = False
+        
+    def _load(self):
+        if self._loaded:
+            return
         data_dir = BASE_DIR / "team_recommender"
 
         # Load Node2Vec model
-        self.w2v_model = Word2Vec.load(str(data_dir / "node2vec_model.w2v"))
+        self.w2v_model = Word2Vec.load(str(data_dir / "node2vec_model.w2v"), mmap="r")
 
         # Load pre-computed embeddings
         npz = np.load(data_dir / "pokemon_embeddings.npz", allow_pickle=True)
@@ -421,10 +433,12 @@ class TeamRecommenderService:
 
         # Build name → index lookup
         self.name_to_idx = {n: i for i, n in enumerate(self.names)}
+        self._loaded = True
 
     def recommend(
         self, team: list[str], top_k: int = 5
     ) -> list[dict]:
+        self._load()
         # Compute team centroid
         valid_vecs = []
         for name in team:
@@ -475,19 +489,26 @@ class TeamClassifierService:
     """Logistic Regression classifier for team archetypes."""
 
     def __init__(self) -> None:
+        self._loaded = False
+        
+    def _load(self):
+        if self._loaded:
+            return
         data_dir = BASE_DIR / "team_classifier"
 
-        self.model = joblib.load(data_dir / "model.joblib")
-        self.scaler = joblib.load(data_dir / "scaler.joblib")
-        self.label_encoder = joblib.load(data_dir / "label_encoder.joblib")
+        self.model = joblib.load(data_dir / "model.joblib", mmap_mode="r")
+        self.scaler = joblib.load(data_dir / "scaler.joblib", mmap_mode="r")
+        self.label_encoder = joblib.load(data_dir / "label_encoder.joblib", mmap_mode="r")
 
         # Load feature names (skip header line "0")
         with open(data_dir / "feature_names.csv") as f:
             lines = [l.strip() for l in f.readlines() if l.strip()]
         # First line is "0" (index header), skip it
         self.feature_names = [l for l in lines if l != "0"]
+        self._loaded = True
 
     def classify(self, features: dict[str, float]) -> dict:
+        self._load()
         # Build feature vector in the correct order
         vec = np.array(
             [features.get(fn, 0.0) for fn in self.feature_names]

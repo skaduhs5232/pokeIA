@@ -28,30 +28,15 @@ classifier_svc: TeamClassifierService | None = None
 load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / ".env")
 
 
-import threading
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global search_svc, recommender_svc, classifier_svc
-
-    def load_models():
-        global search_svc, recommender_svc, classifier_svc
-        try:
-            print("Carregando Pokedex Semantic Search…")
-            search_svc = SemanticSearchService()
-
-            print("Carregando Team Recommender…")
-            recommender_svc = TeamRecommenderService()
-
-            print("Carregando Team Classifier…")
-            classifier_svc = TeamClassifierService()
-
-            print("Todos os modelos carregados!")
-        except Exception as e:
-            print(f"Erro ao carregar modelos: {e}")
-
-    print("Iniciando carregamento dos modelos em background...")
-    threading.Thread(target=load_models, daemon=True).start()
+    
+    # Instantiate the services (they will lazy-load data internally on first use)
+    search_svc = SemanticSearchService()
+    recommender_svc = TeamRecommenderService()
+    classifier_svc = TeamClassifierService()
+    
     yield
 
     # cleanup (nothing to do)
@@ -69,15 +54,16 @@ app = FastAPI(
 )
 
 
+@app.get("/", tags=["Health"])
 @app.get("/health", tags=["Health"])
 async def health():
     """Verifica se o serviço está ativo e os modelos estão carregados."""
     return {
         "status": "ok",
         "models": {
-            "semantic_search": search_svc is not None,
-            "team_recommender": recommender_svc is not None,
-            "team_classifier": classifier_svc is not None,
+            "semantic_search": search_svc is not None and getattr(search_svc, "_loaded", False),
+            "team_recommender": recommender_svc is not None and getattr(recommender_svc, "_loaded", False),
+            "team_classifier": classifier_svc is not None and getattr(classifier_svc, "_loaded", False),
         },
     }
 
