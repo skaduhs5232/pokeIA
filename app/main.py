@@ -28,14 +28,28 @@ classifier_svc: TeamClassifierService | None = None
 load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / ".env")
 
 
+import threading
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global search_svc, recommender_svc, classifier_svc
     
-    # Instantiate the services (they will lazy-load data internally on first use)
+    # Instantiate the services
     search_svc = SemanticSearchService()
     recommender_svc = TeamRecommenderService()
     classifier_svc = TeamClassifierService()
+    
+    def load_all():
+        print("Iniciando carregamento assíncrono (warm-up) dos modelos...")
+        try:
+            search_svc._load()
+            recommender_svc._load()
+            classifier_svc._load()
+            print("Warm-up concluído com sucesso!")
+        except Exception as e:
+            print(f"Erro durante o warm-up: {e}")
+            
+    threading.Thread(target=load_all, daemon=True).start()
     
     yield
 

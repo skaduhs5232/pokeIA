@@ -1,16 +1,8 @@
 from pathlib import Path
 import json
 import os
-import pickle
-import re
 import unicodedata
 from typing import Optional
-
-import numpy as np
-import pandas as pd
-import joblib
-from gensim.models import Word2Vec
-from sentence_transformers import SentenceTransformer, CrossEncoder
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -229,6 +221,12 @@ class SemanticSearchService:
     def _load(self):
         if self._loaded:
             return
+        
+        import pickle
+        import numpy as np
+        import pandas as pd
+        from sentence_transformers import SentenceTransformer, CrossEncoder
+        
         data_dir = BASE_DIR / "pokedex_semantic_search"
 
         # ── Documentos & metadados ──
@@ -289,6 +287,7 @@ class SemanticSearchService:
     # Funções auxiliares de retrieval
     # ─────────────────────────────────────────────────────────────────────
     def _dense_search(self, query: str, k: int) -> list[int]:
+        import numpy as np
         """Top-k por similaridade densa (FAISS ou numpy)."""
         q_vec = self.encoder.encode(
             [f"query: {query}"], normalize_embeddings=True
@@ -300,6 +299,7 @@ class SemanticSearchService:
         return list(np.argsort(sims)[::-1][:k].astype(int))
 
     def _sparse_search(self, query: str, k: int) -> list[int]:
+        import numpy as np
         """Top-k por BM25 (lexical). Retorna lista vazia se BM25 indisponível."""
         if self.bm25 is None:
             return []
@@ -415,6 +415,11 @@ class TeamRecommenderService:
     def _load(self):
         if self._loaded:
             return
+            
+        import numpy as np
+        import pandas as pd
+        from gensim.models import Word2Vec
+        
         data_dir = BASE_DIR / "team_recommender"
 
         # Load Node2Vec model
@@ -439,6 +444,7 @@ class TeamRecommenderService:
         self, team: list[str], top_k: int = 5
     ) -> list[dict]:
         self._load()
+        import numpy as np
         # Compute team centroid
         valid_vecs = []
         for name in team:
@@ -479,6 +485,7 @@ class TeamRecommenderService:
         return results
 
     def get_known_pokemon(self) -> list[str]:
+        self._load()
         return list(self.names)
 
 
@@ -494,6 +501,10 @@ class TeamClassifierService:
     def _load(self):
         if self._loaded:
             return
+            
+        import joblib
+        import numpy as np
+        
         data_dir = BASE_DIR / "team_classifier"
 
         self.model = joblib.load(data_dir / "model.joblib", mmap_mode="r")
@@ -509,6 +520,7 @@ class TeamClassifierService:
 
     def classify(self, features: dict[str, float]) -> dict:
         self._load()
+        import numpy as np
         # Build feature vector in the correct order
         vec = np.array(
             [features.get(fn, 0.0) for fn in self.feature_names]
@@ -537,7 +549,9 @@ class TeamClassifierService:
         }
 
     def get_feature_names(self) -> list[str]:
+        self._load()
         return self.feature_names
 
     def get_archetypes(self) -> list[str]:
+        self._load()
         return list(self.label_encoder.classes_)
